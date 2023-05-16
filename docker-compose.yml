@@ -1,0 +1,45 @@
+version: '2'
+services:
+    db: 
+        image: mysql:5.7
+        restart: always
+        volumes:
+          - ./configDB/initdb:/docker-entrypoint-initdb.d
+          - ./dataDB/mysql:/var/lib/mysql
+          - ./logsDB/mysql:/var/log/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: grupo6ds
+            MYSQL_DATABASE: DB_grupo6
+            MYSQL_USER: grupo6ds
+            MYSQL_PASSWORD: grupo6ds
+        ports:
+            - "3307:3306"
+    web: 
+        build: ./
+        command: bundle exec rails s -p 3000 -b '0.0.0.0'
+        volumes: 
+           - ./:/P4
+        ports: 
+          - "3001:3000"
+        depends_on:
+          - db
+        links:
+          - db
+        environment:
+          DB_USER: grupo6ds
+          DB_NAME: DB_grupo6
+          DB_PASSWORD: grupo6ds
+          DB_HOST: db
+    phpmyadmin:
+        image: phpmyadmin
+        links:
+            - db:db
+        ports:
+            - 8000:80
+        environment:
+            MYSQL_USER: grupo6ds
+            MYSQL_PASSWORD: grupo6ds
+            MYSQL_ROOT_PASSWORD: grupo6ds
+        volumes:
+          - ./configPMA/pma.ini:/usr/local/etc/php/conf.d/php-phpmyadmin.ini
+
